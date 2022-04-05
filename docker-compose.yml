@@ -1,0 +1,89 @@
+version: "3"
+services:
+  traefik:
+    image: traefik:1.7.4
+    container_name: Traefik
+    command: --web --docker --docker.domain=docker.localhost --logLevel=DEBUG
+    ports:
+      - "81:80"
+      - "8080:8080"
+      # - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
+    networks:
+      - webgateway
+    labels:
+      - "traefik.backend=Traefik"
+  
+  Figaro-1:
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    expose:
+      - "80"
+    networks:
+      - webgateway
+    labels:
+      - "traefik.docker.network=traefik"
+      - "traefik.backend=Figaro"
+      - "traefik.frontend.rule=Host:figaro.localhost"
+      - "traefik.port=80"
+      - "traefik.weight=1"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+
+  Figaro-2:
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    expose:
+      - "80"
+    networks:
+      - webgateway
+    labels:
+      - "traefik.docker.network=traefik"
+      - "traefik.backend=Figaro"
+      - "traefik.frontend.rule=Host:figaro.localhost"
+      - "traefik.port=80"
+      - "traefik.weight=2"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+  
+  Gorafi-1:
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    expose:
+      - "80"
+    networks:
+      - webgateway
+    labels:
+      - "traefik.docker.network=traefik"
+      - "traefik.backend=Gorafi"
+      - "traefik.frontend.rule=Host:gorafi.localhost"
+      - "traefik.port=80"
+      - "traefik.weight=1"
+    volumes:
+      - ./indexG.html:/usr/share/nginx/html/index.html
+  
+  Gorafi-2:
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    expose:
+      - "80"
+    networks:
+      - webgateway
+    labels:
+      - "traefik.docker.network=traefik"
+      - "traefik.backend=Gorafi"
+      - "traefik.frontend.rule=Host:gorafi.localhost"
+      - "traefik.port=80"
+      - "traefik.weight=2"
+    volumes:
+      - ./indexG.html:/usr/share/nginx/html/index.html
+
+networks:
+  webgateway:
+    driver: bridge
